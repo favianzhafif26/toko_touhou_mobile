@@ -6,7 +6,7 @@ class MyHomePage extends StatelessWidget {
   final String name = 'Favian Zhafif Rizqullah Permana';
   final String className = 'PBP D';
   final List<ItemHomepage> items = [
-    ItemHomepage("Lihat Produk", Icons.mood),
+    ItemHomepage("Lihat Produk", Icons.shop),
     ItemHomepage("Tambah Produk", Icons.add),
     ItemHomepage("Logout", Icons.logout),
   ];
