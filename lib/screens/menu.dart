@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:toko_touhou_mobile/widgets/left_drawer.dart';
+import 'package:toko_touhou_mobile/widgets/item_card.dart';
 
 class MyHomePage extends StatelessWidget {
   MyHomePage({super.key});
@@ -14,6 +16,7 @@ class MyHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     // Scaffold menyediakan struktur dasar halaman dengan AppBar dan body.
     return Scaffold(
+      drawer: const LeftDrawer(),
       // AppBar adalah bagian atas halaman yang menampilkan judul.
       appBar: AppBar(
         title: const Text(
