@@ -386,4 +386,385 @@ Menyimpan Status: `Cookie` disimpan di `CookieRequest` untuk keperluan autentika
 - Update Status: Aplikasi mengubah status pengguna menjadi tidak login.
 - Navigasi: Pengguna diarahkan kembali ke halaman login.
 
-## 
+## Implementasi Checklist Step-by-Step
+## Mengimplementasikan fitur registrasi akun pada proyek tugas Flutter.
+Buat app baru di projek Django kemarin "authentication", dan dalam `views.py` buat fungsi berikut:
+```python
+   @csrf_exempt
+def register(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        username = data['username']
+        password1 = data['password1']
+        password2 = data['password2']
+
+        # Check if the passwords match
+        if password1 != password2:
+            return JsonResponse({
+                "status": False,
+                "message": "Passwords do not match."
+            }, status=400)
+        
+        # Check if the username is already taken
+        if User.objects.filter(username=username).exists():
+            return JsonResponse({
+                "status": False,
+                "message": "Username already exists."
+            }, status=400)
+        
+        # Create the new user
+        user = User.objects.create_user(username=username, password=password1)
+        user.save()
+        
+        return JsonResponse({
+            "username": user.username,
+            "status": 'success',
+            "message": "User created successfully!"
+        }, status=200)
+    
+    else:
+        return JsonResponse({
+            "status": False,
+            "message": "Invalid request method."
+        }, status=400)
+```
+Membuat file Dart baru bernama `register.dart` di dalam direktori `screens`. Di dalam file tersebut, tambahkan `TextFormField` untuk menerima input username, password, dan konfirmasi password dari pengguna. Selanjutnya, buat sebuah `ElevatedButton` yang, saat ditekan, akan mengirimkan data username dan password dalam bentuk `postJSON` ke Django. Di sisi server, Django akan memproses data ini dengan menjalankan fungsi `register` di `views.py` pada aplikasi `authentication`. Fungsi tersebut akan memberikan balasan berupa `JSONResponse`, yang akan ditangkap oleh Flutter. Berdasarkan respons tersebut, jika pendaftaran berhasil, pengguna akan dialihkan ke halaman login menggunakan `PushReplacement`. Sebaliknya, jika pendaftaran gagal, pengguna akan tetap di halaman registrasi, dan pesan kesalahan akan ditampilkan.
+
+## Membuat halaman login pada proyek tugas Flutter.
+Dalam `views.py` dalam `authentication`, membuat fungsi:
+```python
+   def login(request):
+   username = request.POST['username']
+   password = request.POST['password']
+   user = authenticate(username=username, password=password)
+   if user is not None:
+       if user.is_active:
+           auth_login(request, user)
+           # Status login sukses.
+           return JsonResponse({
+               "username": user.username,
+               "status": True,
+               "message": "Login sukses!"
+               # Tambahkan data lainnya jika ingin mengirim data ke Flutter.
+           }, status=200)
+       else:
+           return JsonResponse({
+               "status": False,
+               "message": "Login gagal, akun dinonaktifkan."
+           }, status=401)
+
+   else:
+       return JsonResponse({
+           "status": False,
+           "message": "Login gagal, periksa kembali email atau kata sandi."
+       }, status=401)
+```
+Pertama, instal paket yang disediakan oleh tim asisten dosen untuk mengintegrasikan sistem autentikasi dengan Django. Jalankan perintah `flutter pub add provider` dan `flutter pub add pbp_django_auth`. Kemudian, di file `main.dart`, ubah `home: MyHomePage()` menjadi `home: const LoginPage()` untuk membuat aplikasi menjadi login-restricted.
+
+Setelah itu, buat file baru bernama `login.dart` di dalam folder `screens`. Di dalam file tersebut, buat widget `build` yang menampilkan `TextField` untuk menerima input username dan password. Tambahkan sebuah tombol submit menggunakan `ElevatedButton`, dan di dalam fungsi `onPressed()`, buat permintaan (request) ke Django App Authentication, memanggil fungsi `login` di `views.py`. Berdasarkan respons dari Django, atur kondisi untuk menentukan apakah login berhasil atau gagal. Jika login berhasil, navigasikan ke `menu.dart` menggunakan `pushReplacement`. Jika login gagal, tetap di halaman login dan tampilkan pesan kesalahan.
+
+## Mengintegrasikan sistem autentikasi Django dengan proyek tugas Flutter.
+Sudah terjelaskan di poin step sebelumnya.
+
+## Membuat model kustom sesuai dengan proyek aplikasi Django.
+Di Django, buat beberapa contoh produk terlebih dahulu menggunakan fitur "add new item". Setelah itu, buka halaman JSON, salin data JSON dalam format pretty print, lalu konversikan data tersebut ke format Dart menggunakan situs web Quicktype. Selanjutnya, buat direktori baru bernama `models` dan tambahkan file baru bernama `item_entry.dart`, lalu tempelkan data JSON yang sudah dikonversi ke dalam file tersebut.
+
+```dart
+   // To parse this JSON data, do
+//
+//     final moodEntry = moodEntryFromJson(jsonString);
+
+import 'dart:convert';
+
+List<ItemEntry> itemEntryFromJson(String str) =>
+    List<ItemEntry>.from(json.decode(str).map((x) => ItemEntry.fromJson(x)));
+
+String itemEntryToJson(List<ItemEntry> data) =>
+    json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+
+class ItemEntry {
+  String model;
+  String pk;
+  Fields fields;
+
+  ItemEntry({
+    required this.model,
+    required this.pk,
+    required this.fields,
+  });
+
+  factory ItemEntry.fromJson(Map<String, dynamic> json) => ItemEntry(
+        model: json["model"],
+        pk: json["pk"],
+        fields: Fields.fromJson(json["fields"]),
+      );
+
+  Map<String, dynamic> toJson() => {
+        "model": model,
+        "pk": pk,
+        "fields": fields.toJson(),
+      };
+}
+
+class Fields {
+  int user;
+  String item;
+  String description;
+  int price;
+  int amount;
+  String filter;
+
+  Fields({
+    required this.user,
+    required this.item,
+    required this.description,
+    required this.price,
+    required this.amount,
+    required this.filter,
+  });
+
+  factory Fields.fromJson(Map<String, dynamic> json) => Fields(
+        user: json["user"],
+        item: json["item"],
+        description: json["description"],
+        price: json["price"],
+        amount: json["amount"],
+        filter: json["mood_intensity"],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "user": user,
+        "item": item,
+        "description": description,
+        "price": price,
+        "amount": amount,
+        "filter": filter,
+      };
+}
+
+```
+
+## Membuat halaman yang berisi daftar semua item yang terdapat pada endpoint JSON di Django yang telah kamu deploy. Tampilkan name, price, dan description dari masing-masing item pada halaman ini.
+Buat file baru bernama `list_itementry.dart` di dalam folder `screens`. Di dalam file tersebut, ambil data dari JSON Django dan masukkan ke dalam sebuah list menggunakan loop. Kemudian, buat sebuah `ListView` untuk menampilkan data dalam format kolom. Tampilkan informasi seperti nama produk, harga produk, dan deskripsi produk.
+
+```dart
+   import 'package:flutter/material.dart';
+import 'package:toko_touhou_mobile/models/item_entry.dart';
+import 'package:toko_touhou_mobile/widgets/left_drawer.dart';
+import 'package:toko_touhou_mobile/screens/item_detail.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
+
+class ItemEntryPage extends StatefulWidget {
+  const ItemEntryPage({super.key});
+
+  @override
+  State<ItemEntryPage> createState() => _ItemEntryPageState();
+}
+
+class _ItemEntryPageState extends State<ItemEntryPage> {
+  Future<List<ItemEntry>> fetchMood(CookieRequest request) async {
+    final response = await request.get('http://localhost:8000/json/');
+    
+    // Melakukan decode response menjadi bentuk json
+    var data = response;
+    
+    // Melakukan konversi data json menjadi object MoodEntry
+    List<ItemEntry> listItem = [];
+    for (var d in data) {
+      if (d != null) {
+        listItem.add(ItemEntry.fromJson(d));
+      }
+    }
+    return listItem;
+  }
+
+  @override   
+  Widget build(BuildContext context) {
+    final request = context.watch<CookieRequest>();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Item Entry List'),
+      ),
+      drawer: const LeftDrawer(),
+      body: FutureBuilder(
+        future: fetchMood(request),
+        builder: (context, AsyncSnapshot snapshot) {
+          if (snapshot.data == null) {
+            return const Center(child: CircularProgressIndicator());
+          } else {
+            if (!snapshot.hasData) {
+              return const Column(
+                children: [
+                  Text(
+                    'Belum ada data item pada toko touhou.',
+                    style: TextStyle(fontSize: 20, color: Color(0xff59A5D8)),
+                  ),
+                  SizedBox(height: 8),
+                ],
+              );
+            } else {
+              return ListView.builder(
+                itemCount: snapshot.data!.length,
+                itemBuilder: (_, index) => Card(
+                    color: Colors.purple,
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(12.0),
+                    ),
+                    elevation: 4, // Bayangan Card
+                    margin: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12), 
+                    child: ListTile(
+                      title: Text(
+                        "${snapshot.data![index].fields.item}",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 8),
+                          Text(
+                            "Price: \$${snapshot.data![index].fields.price}",
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            "Desc:\n${snapshot.data![index].fields.description}",
+                            style: const TextStyle(color: Colors.white),
+                            softWrap:
+                                true, // Mendukung teks yang melanjutkan ke baris berikutnya
+                          ),
+                        ],
+                      ),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ItemDetailPage(
+                              item: snapshot.data![index],
+                            ),
+                          ),
+                        );
+                      },
+                    )),
+              );
+            }
+          }
+        },
+      ),
+    );
+  }
+}
+```
+
+## Membuat halaman detail untuk setiap item yang terdapat pada halaman daftar Item.
+Di dalam `list_itementry.dart`, tambahkan fungsi `onTap` pada setiap item di `ListView`, sehingga saat item tersebut ditekan, dapat menghasilkan respons sesuai keinginan. Gunakan `Navigator.push()` agar memungkinkan kembali ke halaman sebelumnya dengan `pop` di halaman berikutnya. Pada fungsi `onPressed()`, lakukan forward data produk agar bisa diakses di halaman lain.
+
+Selanjutnya, buat file bernama `item_detail.dart` di folder `screens`. Karena data produk telah di-forward dari `list_itementry.dart`, cukup tampilkan data dari setiap field produk di `item_detail.dart`. Tambahkan juga sebuah `ElevatedButton` dengan `onPressed()` yang, ketika ditekan, akan mengembalikan pengguna ke halaman daftar produk menggunakan `Navigator.pop`.
+
+```dart
+   onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ItemDetailPage(
+            item: snapshot.data![index],
+          ),
+        ),
+      );
+    },
+```
+
+```dart
+   import 'package:flutter/material.dart';
+import 'package:toko_touhou_mobile/models/item_entry.dart';
+
+class ItemDetailPage extends StatelessWidget {
+  final ItemEntry item;
+
+  const ItemDetailPage({super.key, required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          "View Product: ${item.fields.item}",
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.blue,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Name: ${item.fields.item}",
+              style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              "Description: \$${item.fields.description}",
+              style: const TextStyle(color: Colors.white),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "Price:\n${item.fields.price}",
+              style: const TextStyle(color: Colors.white),
+              softWrap:
+                  true,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "Amount: ${item.fields.amount}",
+              style: const TextStyle(color: Colors.white),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "Filter: ${item.fields.filter}",
+              style: const TextStyle(color: Colors.white),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.purple, // Background color
+                foregroundColor: Colors.white, // Font color
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0, vertical: 12.0), // Optional padding
+                shape: RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius.circular(8.0), // Optional rounded corners
+                ),
+              ),
+              child: const Text("Back"),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+## Melakukan filter pada halaman daftar item dengan hanya menampilkan item yang terasosiasi dengan pengguna yang login.
+Ketika login, Flutter mengirimkan informasi username dan password ke Django. Di Django, fungsi login yang berada di `views.py` akan dijalankan, dan dalam fungsi ini digunakan metode `authenticate`.
+
+Metode `authenticate` membatasi hanya pengguna yang telah login yang dapat menambahkan produk. Nantinya, produk akan ditampilkan berdasarkan input yang dimasukkan oleh pengguna tertentu. Jadi, jika login dengan akun pengguna yang berbeda, produk yang dibuat oleh pengguna lain tidak akan muncul dalam daftar produk milik pengguna tersebut.
+
+```dart
+   username = request.POST['username']
+   password = request.POST['password']
+   user = authenticate(username=username, password=password)
+```
+
+---
