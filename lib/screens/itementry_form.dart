@@ -1,5 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:toko_touhou_mobile/screens/menu.dart';
 import 'package:toko_touhou_mobile/widgets/left_drawer.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
 
 class ItemEntryFormPage extends StatefulWidget {
   const ItemEntryFormPage({super.key});
@@ -12,9 +16,12 @@ class _ItemEntryFormPageState extends State<ItemEntryFormPage> {
   final _formKey = GlobalKey<FormState>();
   String _item = "";
   String _description = "";
+  int _price = 0;
   int _amount = 0;
+  String _filter = "";
   @override
   Widget build(BuildContext context) {
+    final request = context.watch<CookieRequest>();
     return Scaffold(
       appBar: AppBar(
         title: const Center(
@@ -82,6 +89,32 @@ class _ItemEntryFormPageState extends State<ItemEntryFormPage> {
               padding: const EdgeInsets.all(8.0),
               child: TextFormField(
                 decoration: InputDecoration(
+                  hintText: "Price",
+                  labelText: "Price",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(5.0),
+                  ),
+                ),
+                onChanged: (String? value) {
+                  setState(() {
+                    _price = int.tryParse(value!) ?? 0;
+                  });
+                },
+                validator: (String? value) {
+                  if (value == null || value.isEmpty) {
+                    return "Price tidak boleh kosong!";
+                  }
+                  if (int.tryParse(value) == null) {
+                    return "Price harus berupa angka!";
+                  }
+                  return null;
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextFormField(
+                decoration: InputDecoration(
                   hintText: "Amount",
                   labelText: "Amount",
                   border: OutlineInputBorder(
@@ -104,6 +137,29 @@ class _ItemEntryFormPageState extends State<ItemEntryFormPage> {
                 },
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextFormField(
+                decoration: InputDecoration(
+                  hintText: "Filter",
+                  labelText: "Filter",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(5.0),
+                  ),
+                ),
+                onChanged: (String? value) {
+                  setState(() {
+                    _filter = value!;
+                  });
+                },
+                validator: (String? value) {
+                  if (value == null || value.isEmpty) {
+                    return "Filter tidak boleh kosong!";
+                  }
+                  return null;
+                },
+              ),
+            ),
             Align(
               alignment: Alignment.bottomCenter,
               child: Padding(
@@ -113,39 +169,40 @@ class _ItemEntryFormPageState extends State<ItemEntryFormPage> {
                     backgroundColor: MaterialStateProperty.all(
                         Theme.of(context).colorScheme.primary),
                   ),
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: const Text('Item berhasil tersimpan'),
-                            content: SingleChildScrollView(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('item: $_item'),
-                                  Text('Description: $_description'),
-                                  Text('Amount: $_amount'),
-                                ],
-                              ),
-                            ),
-                            actions: [
-                              TextButton(
-                                child: const Text('OK'),
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                  _formKey.currentState!.reset();
-                                },
-                              ),
-                            ],
+                  onPressed: () async {
+                      if (_formKey.currentState!.validate()) {
+                          final response = await request.postJson(
+                              "http://localhost:8000/create-flutter/",
+                              jsonEncode(<String, String>{
+                                  'item': _item,
+                                  'description': _description,
+                                  'price': _price.toString(),
+                                  'amount': _amount.toString(),
+                                  'filter': _filter,
+                              }),
                           );
-                        },
-                      );
-                    }
+                          if (context.mounted) {
+                              if (response['status'] == 'success') {
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(const SnackBar(
+                                  content: Text("Item baru berhasil disimpan!"),
+                                  ));
+                                  Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => MyHomePage()),
+                                  );
+                              } else {
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(const SnackBar(
+                                      content:
+                                          Text("Terdapat kesalahan, silakan coba lagi."),
+                                  ));
+                              }
+                          }
+                      }
                   },
                   child: const Text(
-                    "Save",
+                    "Add Item",
                     style: TextStyle(color: Colors.white),
                   ),
                 ),

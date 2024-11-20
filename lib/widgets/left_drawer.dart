@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:toko_touhou_mobile/screens/menu.dart';
 import 'package:toko_touhou_mobile/screens/itementry_form.dart';
+import 'package:toko_touhou_mobile/screens/list_itementry.dart';
 
 class LeftDrawer extends StatelessWidget {
   const LeftDrawer({super.key});
@@ -37,29 +38,39 @@ class LeftDrawer extends StatelessWidget {
                 ),
               ],
             ),
-                  ),
-            ListTile(
-              leading: const Icon(Icons.home_outlined),
-              title: const Text('Halaman Utama'),
-              onTap: () {
-                Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => MyHomePage(),
-                    ));
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.shop),
-              title: const Text('Tambah Item'),
-              onTap: () {
-                Navigator.pushReplacement(
+          ),
+          ListTile(
+            leading: const Icon(Icons.home_outlined),
+            title: const Text('Halaman Utama'),
+            onTap: () {
+              Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MyHomePage(),
+                  ));
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.shop),
+            title: const Text('Tambah Item'),
+            onTap: () {
+              Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
                     builder: (context) => ItemEntryFormPage(),
                   ));
-              },
-            ),
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.shop_2),
+            title: const Text('Daftar Item'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ItemEntryPage()),
+              );
+            },
+          ),
         ],
       ),
     );
