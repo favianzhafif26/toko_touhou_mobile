@@ -327,3 +327,63 @@ Penggunaan pop:
     ],
 ```
 ---
+
+## Tugas 9 PBP 2024/2025
+
+## Mengapa Perlu Membuat Model untuk Pengambilan atau Pengiriman Data JSON
+Model membantu dalam:
+- Strukturisasi Data: Memetakan data JSON menjadi objek Dart yang terstruktur, sehingga lebih mudah diakses dan digunakan.
+- Validasi dan Transformasi: Memastikan data memiliki format dan tipe yang benar.
+- Pemeliharaan Kode: Kode menjadi lebih terorganisir karena data memiliki representasi khusus.
+
+Apakah Akan Terjadi Error Jika Tidak Membuat Model? Tidak selalu, tetapi:
+- Data JSON harus diproses secara manual, yang rentan terhadap kesalahan.
+- Akses ke data menjadi lebih kompleks dan rawan kesalahan tipe data.
+- Aplikasi menjadi lebih sulit dikembangkan dan dipelihara.
+
+## Fungsi Library HTTP
+- Melakukan HTTP Request: Mengirim permintaan (`GET`, `POST`, `PUT`, `DELETE`) ke server.
+- Mengambil Data dari API: Memperoleh respons dalam format JSON atau lainnya.
+
+## Fungsi `CookieRequest` dan Alasan Pentingnya Dibagikan di Aplikasi Flutter
+CookieRequest adalah bagian dari package pbp_django_auth yang digunakan untuk:
+- Mengelola Autentikasi: Menyimpan sesi login pengguna melalui cookie.
+- Menyederhanakan HTTP Request: Mempermudah pengiriman data dengan autentikasi tanpa menambahkan header manual.
+- Mendukung Stateful Request: Mengingat status login pengguna di berbagai request.
+
+Mengapa Instance `CookieRequest` Dibagikan? 
+Agar data pengguna yang sudah login, seperti status, nama, atau email, dapat diakses dari mana saja di aplikasi.
+
+## Mekanisme Pengiriman Data dari Input hingga Ditampilkan di Flutter
+Input Data: Pengguna mengisi data, misalnya produk, di halaman product_entry_form.dart.
+Mengirim Request: Data dikirim ke server Django menggunakan http atau CookieRequest dalam format JSON setelah tombol kirim diklik.
+
+Proses di Backend:
+- Server Django menerima data melalui urls.py dan memproses logika di views.py.
+- Data diproses (misalnya, disimpan atau dibaca dari database), dan respons JSON dikembalikan.
+- Menerima Respons: Aplikasi Flutter menerima respons JSON.
+
+Decode Data: Respons JSON diubah menjadi objek Dart menggunakan model.
+Menampilkan Data: Data yang sudah dikonversi ditampilkan di antarmuka Flutter.
+
+## Mekanisme Autentikasi (Login, Register, Logout)
+### Login
+- Input Data: Pengguna memasukkan email dan password di halaman login.
+Mengirim Request: Data dikirim ke endpoint login Django menggunakan `CookieRequest`.
+- Proses Backend: Django memverifikasi kredensial dan, jika valid, mengirimkan cookie autentikasi.
+Menyimpan Status: `Cookie` disimpan di `CookieRequest` untuk keperluan autentikasi selanjutnya.
+- Tampilan Menu: Aplikasi menampilkan menu utama sesuai dengan status login.
+
+### Register
+- Input Data: Pengguna mengisi informasi akun, seperti nama, email, dan password.
+- Mengirim Request: Data dikirim ke endpoint register Django.
+- Proses Backend: Django menyimpan data pengguna baru dan mengirimkan respons sukses.
+- Notifikasi: Flutter menampilkan pesan berdasarkan respons dan mengarahkan ke halaman login.
+
+### Logout
+- Request Logout: Pengguna mengklik tombol logout, dan request dikirim ke Django menggunakan `CookieRequest`.
+- Hapus Cookie: Django menghapus sesi pengguna.
+- Update Status: Aplikasi mengubah status pengguna menjadi tidak login.
+- Navigasi: Pengguna diarahkan kembali ke halaman login.
+
+## 
