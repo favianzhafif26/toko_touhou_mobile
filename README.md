@@ -1,6 +1,6 @@
 ---
-# Toko Touhou ᗜˬᗜ
-An E-Commerce Web for the Touhou Series fandom  
+# Toko Touhou Mobile ᗜˬᗜ
+An E-Commerce mobile app for the Touhou Series fandom  
 
 ### This E-Commerce Web is made by:
 Name: Favian Zhafif Rizqullah Permana  
@@ -218,3 +218,112 @@ Masukkan Logika `onTap` pada `Material`
                 content: Text("Kamu telah menekan tombol ${item.name}!")));
 ...
 ```
+---
+
+## Tugas 8 PBP 2024/2025
+
+## Kegunaan `const` di Flutter, apa keuntungan ketika menggunakan `const`, kapan sebaiknya kita menggunakan `const`, dan kapan sebaiknya tidak digunakan
+
+Dalam Flutter, `const` digunakan untuk membuat nilai atau objek yang bersifat compile-time constant, artinya nilai tersebut dihitung saat kompilasi dan tidak akan berubah di waktu eksekusi.
+
+### Kegunaan const dalam Flutter
+- Efisiensi Memori, objek `const` hanya dibuat satu kali dalam memori. Jika Anda membuat beberapa objek const dengan nilai yang sama, Flutter hanya akan menyimpan satu salinan objek itu. Ini dapat mengurangi konsumsi memori dan mempercepat eksekusi aplikasi.
+- Optimalisasi Performa, karena nilai-nilai `const` dihitung saat kompilasi, aplikasi kita dapat berjalan lebih cepat karena Flutter tidak perlu menghitung ulang nilai tersebut di waktu eksekusi.
+- Meningkatkan Konsistensi, menggunakan `const` memastikan bahwa nilai-nilai yang seharusnya tetap tidak akan berubah, sehingga membuat kode lebih aman dan mudah dipahami.
+
+### Keuntungan Menggunakan const
+- Mempercepat Render UI, jika kita menggunakan `const` untuk widget statis yang tidak berubah (seperti `Text`, `Icon`, atau `Color`), Flutter dapat mengoptimalkan rendering UI lebih efisien.
+- Mencegah Perubahan yang Tidak Diinginkan, dengan mendeklarasikan objek sebagai `const`, kita dapat memastikan bahwa tidak ada perubahan yang dilakukan secara tidak sengaja di objek tersebut.
+
+### Kapan Sebaiknya Menggunakan const
+- Widget Statis, menggunakan `const` untuk widget yang tidak berubah selama masa hidup aplikasi, seperti ikon, teks, atau elemen desain yang tidak perlu di-update.
+- Nilai Konstan, jika kita memiliki konstanta seperti ukuran font atau margin yang tidak akan berubah, gunakan const untuk mendeklarasikannya.
+
+### Kapan Sebaiknya Tidak Menggunakan const
+- Widget Dinamis, jika widget kita akan diperbarui atau nilainya tergantung pada keadaan (misalnya, data yang berasal dari pengguna, API, atau variabel stateful), sebaiknya hindari penggunaan `const`.
+- Objek yang Memerlukan Perhitungan Ulang, jika nilai perlu dihitung kembali berdasarkan interaksi pengguna atau perubahan data, `const` tidak bisa digunakan.
+
+##  Perbandingkan penggunaan `Column` dan `Row` pada Flutter dan contoh implementasi dari masing-masing layout widget tersebut
+
+`Column` digunakan untuk menata widget anak dalam arah vertikal, dari atas ke bawah.
+contoh implementasi:
+```dart
+   Column(
+       children: [
+         // Menampilkan teks sambutan dengan gaya tebal dan ukuran 18.
+         const Padding(
+           padding: EdgeInsets.only(top: 16.0),
+           child: Text(
+             'Welcome to Toko Touhou Mobile',
+             style: TextStyle(
+               fontWeight: FontWeight.bold,
+               fontSize: 18.0,
+             ),
+           ),
+         ),
+
+         GridView.count(
+           primary: true,
+           padding: const EdgeInsets.all(20),
+           crossAxisSpacing: 10,
+           mainAxisSpacing: 10,
+           crossAxisCount: 3,
+           shrinkWrap: true,
+
+           children: items.map((ItemHomepage item) {
+             return ItemCard(item);
+           }).toList(),
+         ),
+       ],
+     ),
+```
+`Row` digunakan untuk menata widget anak dalam arah horizontal, dari kiri ke kanan.
+contoh implementasi:
+```dart
+   Row(
+     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+     children: [
+       InfoCard(title: 'NPM', content: npm),
+       InfoCard(title: 'Name', content: name),
+       InfoCard(title: 'Class', content: className),
+     ],
+   ),
+```
+
+## Elemen input yang saya gunakan pada halaman form yang saya buat pada tugas kali ini dan elemen input Flutter lain yang tidak saya gunakan pada tugas ini
+Dalam tugas ini, saya hanya menggunakan elemen input berupa `TextField`, yang berfungsi untuk memasukkan data seperti nama produk, deskripsi, dan amount atau jumlah. Beberapa elemen input lain, seperti `Checkbox`, `Radio`, `Switch`, dan `DropdownButton`, tidak saya gunakan dalam tugas ini. Hal ini karena data yang dimasukkan hanya berupa teks sederhana.
+
+## Cara saya mengatur tema (theme) dalam aplikasi Flutter agar aplikasi yang dibuat konsisten
+Untuk menjaga konsistensi dalam aplikasi, tema saya atur menggunakan `ThemeData` pada widget `MaterialApp`. Dengan cara ini, kita dapat menetapkan tema global untuk aplikasi, termasuk warna utama, font, dan elemen lainnya.
+```dart 
+backgroundColor: Theme.of(context).colorScheme.primary,
+```
+Pengaturan ini memastikan bahwa seluruh aplikasi memiliki tema yang seragam, dan setiap elemen yang memerlukan tema akan mengikuti konfigurasi yang sudah ditetapkan.
+
+## Cara saya menangani navigasi dalam aplikasi dengan banyak halaman pada Flutter
+Navigasi di Flutter dapat dikelola dengan menggunakan `Navigator`. Untuk berpindah antar halaman, kita dapat memakai `Navigator.push()`, sedangkan untuk kembali ke halaman sebelumnya, kita menggunakan `Navigator.pop()`.
+
+Penggunaan push:
+```dart
+    onTap: () {
+       Navigator.pushReplacement(
+           context,
+           MaterialPageRoute(
+             builder: (context) => MyHomePage(),
+           ));
+     },
+```
+
+Penggunaan pop:
+```dart
+   actions: [
+      TextButton(
+        child: const Text('OK'),
+        onPressed: () {
+          Navigator.pop(context);
+          _formKey.currentState!.reset();
+        },
+      ),
+    ],
+```
+---
